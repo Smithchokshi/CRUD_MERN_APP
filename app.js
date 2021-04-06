@@ -5,19 +5,10 @@ const cors = require('cors');
 const Student = require('./models/Students.js');
 const path = require('path');
 const app = express();
-// Serve static assets if in production
-if(process.env.NODE_ENV === 'production') {
-    // set static folder
-    app.use(express.static('client/build'));
-
-    app.get('*',(req,res)=>{
-        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-    });
-}
 const PORT = process.env.PORT || 5000
 //db connections
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/students')
+mongoose.connect('mongodb://localhost:27017/students')
 mongoose.connection.on('connected', ()=>{
     console.log('Database is Connected!!');
 })
@@ -88,6 +79,13 @@ app.put('/student/:id',(req,res)=>{
 })
 
 
+if(process.env.NODE_ENV=='production'){
+    app.use(express.static('client/build'))
+    const path = require('path');
+    app.get("*",(req,res)=>{
+        res.sendFile(path.resolve(__dirname,'client','build','index.html'))
+    })
+}
 
 
 //server
