@@ -2,19 +2,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Student = require('./models/Students.js');
+const dotenv = require('dotenv');
 const path = require('path');
+const Student = require('./models/Students.js');
 const app = express();
-const PORT = process.env.PORT || 5000
+
 //db connections
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/students')
-mongoose.connection.on('connected', ()=>{
-    console.log('Database is Connected!!');
-})
-mongoose.connection.on('error', ()=>{
-    console.log('error occured');
-})
+dotenv.config({path:'./config.env'});
+require('./db/db.js');
+const PORT = process.env.PORT || 5000
 //middlewares
 app.use(cors());
 app.use(express.json());
@@ -78,15 +74,17 @@ app.put('/student/:id',(req,res)=>{
     })
 })
 
+if(process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "/client/build")));
 
-if(process.env.NODE_ENV=='production'){
-    app.use(express.static('client/build'))
-    const path = require('path');
-    app.get("*",(req,res)=>{
-        res.sendFile(path.resolve(__dirname,'client','build','index.html'))
+    app.get('*',(req,res)=>{
+        res.sendFile(path.join(__dirname, 'client','build', 'index.html'));
+    })
+} else {
+    app.get('/',(req,res)=>{
+        res.send('API Running');
     })
 }
-
 
 //server
 app.listen(PORT,()=>{
